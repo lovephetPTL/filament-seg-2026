@@ -1,0 +1,11 @@
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.pytest_cache/
+# large / external files: model weights go to a GitHub Release, data comes from Kaggle
+*.pth
+tiles/
+train/
+test_images/
+*.zip
+MAGFiLO_*.json
