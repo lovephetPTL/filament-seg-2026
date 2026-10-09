@@ -7,7 +7,10 @@ then split into filaments with connected components.
 | Submission | Description | Validation PQ (ours) | Public score |
 |---|---|---|---|
 | #1 baseline | overlap inference, threshold 0.5, components >= 120 px | 0.3825 | 0.31 |
-| #2 final | same + closing (k=31) used only to *group* pieces; submitted pixels unchanged | 0.3937 | 0.32 |
+| #2 Model A + closing | same + closing (k=31) used only to *group* pieces; submitted pixels unchanged | 0.3937 | 0.32 |
+| #3 Model B + closing | baseline weights + 5 more epochs on the cleaned tile set (see "Supplementary experiments") | 0.3882 raw (repo pipeline with closing: not yet measured) | 0.33 |
+
+**Final selection on Kaggle:** TODO (fill in after selecting the two files; a 0.01 difference on 180 test images is within noise).
 
 Validation PQ was computed on our own date-grouped split (164 annotator-images = 103 photos). For the baseline it equals the
 organisers Self-Evaluation code (0.3825); the closing variant was not cross-checked with it. The validation set was also used to choose
@@ -16,10 +19,12 @@ and the public score (0.31-0.32) remains unexplained.
 
 ## How to reproduce the submitted predictions
 1. Get the test images from the Kaggle *Data* tab and place them, flat, in `test_images/` (180 files).
-2. Get `best_baseline_unet.pth` (97.9 MB) from the **Releases** page of this repository and put it in the repository root.
+2. Get the weights from the **Releases** page of this repository (97.9 MB each) and put them in the repository root:
+   `unet_resnet34_baseline_ep18.pth` (Model A) and `unet_resnet34_v3_control_ep5.pth` (Model B).
 3. `pip install -r requirements.txt`
 4. Run `notebooks/01_make_submission.ipynb`, or
-   `python scripts/make_submission.py --images test_images --weights best_baseline_unet.pth --out submission_closing31B.csv`
+   `python scripts/make_submission.py --images test_images --weights unet_resnet34_baseline_ep18.pth --out submission_modelA_closing31.csv`
+   (Model B: `--weights unet_resnet34_v3_control_ep5.pth`)
    (`--no-closing` gives the baseline file).
 
 No other file is needed. Training is **not** required to reproduce the predictions.
@@ -47,6 +52,13 @@ No other file is needed. Training is **not** required to reproduce the predictio
 
 The gain of B (+0.011) comes mainly from fewer false positives (818 -> 719) with TP almost unchanged (774 -> 769). It is small and was selected on the validation set.
 
+## Supplementary experiments and Model B
+After the baseline we studied thin, feather-like filaments by hand and fine-tuned from the baseline weights. Details, tile lists and
+result files are in `experiments/`; the training script is `scripts/train_v3.py`, the validation script `scripts/evaluate_val.py`.
+Model B (`v3_control`, 5 epochs, lr 1e-4, random 90-degree rotation, 10 annotator-images and 173 tiles removed) reached validation PQ
+0.3882 versus 0.3825 for Model A (single run per arm; differences below about 0.005 are treated as noise) and public 0.33 versus 0.32 with
+closing. We do not claim that Model B is better. The feather-focused variants did not beat the baseline on validation (see `experiments/README.md`).
+
 ## Training history (honest account)
 The checkpoint was produced in three consecutive Colab sessions. Each session resumed from the best checkpoint of the previous one and created a **new** optimiser.
 The epoch counter in the logs (1-18) is therefore not the number of epochs the final weights have seen.
@@ -69,8 +81,9 @@ Tile Dice counts empty tiles as 1.0 and is therefore much higher than the filame
 
 ## Repository layout
 ```
-src/filament/     config, tiling (blend), infer, postprocess, rle, pipeline, metrics, data, dataset, model, train
-scripts/          make_submission.py, compare_submissions.py, train.py
+src/filament/     config, tiling (blend), infer, postprocess, rle, pipeline, metrics, evaluation, data, v3_data, dataset, model, train
+scripts/          make_submission.py, compare_submissions.py, evaluate_val.py, train.py, train_v3.py
+experiments/      tile plan, result files and notes of the supplementary fine-tuning runs (Model B)
 notebooks/        01_make_submission.ipynb  (the entry point for reviewers)
 tests/            unit tests (pytest) for tiling/blending, post-processing, RLE, PQ and the split
 original_colab_cells/   the experiment cells exactly as run in Colab (archive, see its README)
@@ -80,7 +93,7 @@ figures/          validation IoU / Dice / many-to-one plots of the baseline
 ## How to verify
 * `pytest -q tests` checks the numpy-side logic (25-tile grid, blending of a constant map, closing never adds pixels, RLE round trip, hand-computed PQ cases, no date shared by train and validation).
 * `scripts/compare_submissions.py` compares a regenerated CSV with the one uploaded to Kaggle.
-* **End-to-end check (Colab T4, about 5 minutes):** `scripts/make_submission.py` regenerated the final file from the test images and `best_baseline_unet.pth`: 1,566 rows (same ids as the submitted file), 1,565 identical RLE strings, one differing mask with IoU 0.9983 against the submitted one (small numerical differences between runs), 8.7 filaments per image, 2 of 180 images without a prediction, 0 overlapping masks, 0 RLE round-trip failures.
+* **End-to-end check (Colab T4, about 5 minutes):** `scripts/make_submission.py` regenerated the Model A file from the test images and the baseline weights (`best_baseline_unet.pth` = `unet_resnet34_baseline_ep18.pth`): 1,566 rows (same ids as the submitted file), 1,565 identical RLE strings, one differing mask with IoU 0.9983 against the submitted one (small numerical differences between runs), 8.7 filaments per image, 2 of 180 images without a prediction, 0 overlapping masks, 0 RLE round-trip failures.
 * `infer.py`, `model.py`, `pipeline.py` were exercised by that run. `train.py`, `dataset.py` and `data.py` (training only) were refactored from the Colab cells and have NOT been re-run.
 
 ## Pinned versions
