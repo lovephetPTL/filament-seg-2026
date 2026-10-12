@@ -28,6 +28,46 @@ Training set for Model B: 5,067 filament tiles + 2,479 empty tiles (seeded 25 %)
 Sources (all in `results/`): `val_results_organizer_code.json` (baseline, feather_x4), `val_results_finetune.json` (ft_union, ft_control),
 `val_results_v3.json` (v3_main, v3_control). Public scores are shown by Kaggle with two decimals on part of the test set.
 
+## Validation PQ of the final pipeline (closing k=31) and an exploratory probability filter
+File: `results/val_results_meanprob.json` (computed in Colab by the authors own evaluation cell with the organisers PQ code; the Model A closing
+numbers equal the earlier 0.3937 measurement, TP 769 / FP 719 / FN 386, which supports that the evaluation is the same as the repository pipeline).
+`mean_prob >= 0.85` means: a predicted piece is kept only if the mean sigmoid probability of its pixels is at least 0.85. One value, fixed in advance
+(no sweep). The filter code is **not in the repository yet** and is NOT part of the submitted files.
+
+| Model | Post-processing | PQ | TP | FP | FN | Pieces |
+|---|---|---|---|---|---|---|
+| A (baseline) | closing k=31 | 0.3937 | 769 | 719 | 386 | 967 |
+| A (baseline) | closing k=31 + mean_prob >= 0.85 | 0.4033 | 763 | 645 | 392 | 913 |
+| B (v3_control) | closing k=31 | 0.3983 | 763 | 676 | 392 | 936 |
+| B (v3_control) | closing k=31 + mean_prob >= 0.85 | 0.4052 | 753 | 608 | 402 | 886 |
+
+Reading: the filter removes about 70 false positives per model and loses 6-10 true positives (PQ +0.0096 for A, +0.0069 for B). Both are measured on the
+same validation set that was used for earlier choices, one run per model, no paired interval: treat them as promising, not proven. With closing, Model B
+is +0.0046 above Model A on validation (+0.0019 with the filter), which is within the noise level we set (about 0.005); the public scores (0.33 vs 0.32) agree
+in sign but are also within noise. The filter has not been applied to the test images or submitted to Kaggle.
+
+## Later experiments (v4 soft target, hysteresis threshold): negative results
+Source: the authors Colab runs (Project Log Part 5); the result files and the code for these runs are **not in this repository yet**.
+Bar fixed in advance for every test: PQ must beat Model B with closing (0.3983) by at least 0.01, i.e. reach 0.4083. No test reached it.
+* **v4 soft target:** same recipe as Model B, only the label changes (mean of the masks of all annotators of the same photo, 599 training photos,
+  42 % of them with 2-3 annotators). PQ 0.3939 (TP 780, FP 733, FN 375, 990 pieces): more TP and fewer FN than Model B but more FP; -0.0044 vs Model B, within noise.
+  Remark: the Dice loss of segmentation_models_pytorch 0.5.0 gave values on soft labels that matched neither the textbook soft Dice nor a binarised target
+  (cause not investigated), so v4 used a hand-written soft Dice that equals smp on 0/1 labels.
+* **Hysteresis threshold** (keep a region of prob > t_lo only if it contains a pixel > t_hi), final pipeline otherwise unchanged:
+
+| t_lo, t_hi | Model B PQ | v4 PQ |
+|---|---|---|
+| 0.5, 0.5 (code check, equals the old pipeline) | 0.3983 | 0.3939 |
+| 0.4, 0.6 | 0.4021 | 0.3953 |
+| 0.4, 0.7 | 0.4019 | 0.3962 |
+| 0.5, 0.7 | 0.3986 | 0.3956 |
+| 0.2, 0.4 | 0.3941 | 0.3912 |
+
+  Best gain about +0.004 (within noise); lowering t_lo to 0.2 made both models worse. Pairs (0.4, 0.6) for Model B and (0.3, 0.6) for v4 were also uploaded to
+  Kaggle as exploratory files (public 0.33 and 0.32); the (0.3, 0.6) pair was chosen after seeing validation results and was not measured on validation.
+* **Visual check of the pieces removed by `mean_prob >= 0.85` (Model B, 50 pieces, one observer, not blind):** 46 labelled real filament, 1 not a filament, 3 unsure;
+  only 8 of the 50 match a ground-truth filament. This suggests the filter would also remove faint real structures. It is an observation, not a measurement.
+
 ## What the results say (and do not say)
 * No fine-tuned model is better than the baseline beyond noise. Model B is +0.0057 PQ on validation, just above our 0.005 threshold, one run per arm.
 * v3_main versus v3_control differ only in feather repetition and blue-wins labels: TP +51, FN -51, FP +312, PQ -0.024. The model finds more

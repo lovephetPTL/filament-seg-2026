@@ -4,16 +4,26 @@ Solution to the Kaggle *Solar Filament Segmentation Challenge 2026* (MAGFiLO, GO
 Instance masks are obtained from a binary U-Net prediction, tiled and blended with overlapping windows,
 then split into filaments with connected components.
 
-| Submission | Description | Validation PQ (ours) | Public score |
-|---|---|---|---|
-| #1 baseline | overlap inference, threshold 0.5, components >= 120 px | 0.3825 | 0.31 |
-| #2 Model A + closing | same + closing (k=31) used only to *group* pieces; submitted pixels unchanged | 0.3937 | 0.32 |
-| #3 Model B + closing | baseline weights + 5 more epochs on the cleaned tile set (see "Supplementary experiments") | 0.3882 raw (repo pipeline with closing: not yet measured) | 0.33 |
+All 8 files uploaded to Kaggle (public scores are shown with two decimals on part of the 180 test images; a 0.01 difference is within noise):
 
-**Final selection on Kaggle:** TODO (fill in after selecting the two files; a 0.01 difference on 180 test images is within noise).
+| # | File | Validation PQ (organisers code) | Public | Can be rebuilt from this repository? |
+|---|---|---|---|---|
+| 1 | Model A, no closing (overlap inference, threshold 0.5, pieces >= 120 px) | 0.3825 | 0.31 | yes: `--no-closing` (not compared with the uploaded raw file) |
+| 2 | Model A + closing k=31 (used only to *group* pieces; submitted pixels unchanged) | 0.3937 | 0.32 | yes (1,565 of 1,566 RLE strings identical) |
+| 3 | feather_x4, epoch 7 + closing | 0.3896 (raw only) | 0.32 | no (weights not in the release) |
+| 4 | v3_main, epoch 5 + closing | 0.3640 (raw only) | 0.31 | no (weights not in the release) |
+| 5 | **Model B** (v3_control, epoch 5) + closing | 0.3983 | 0.33 | yes (1,528 of 1,528 RLE strings identical) |
+| 6 | Model B + hysteresis threshold (0.4, 0.6) | 0.4021 | 0.33 | no (hysteresis code not in the repository) |
+| 7 | v4 soft target, epoch 5 + closing | 0.3939 | 0.32 | no (weights not in the release) |
+| 8 | v4 soft target + hysteresis (0.3, 0.6) | not measured | 0.32 | no (exploratory) |
+
+Files 3, 4 and 6-8 are exploratory (see `experiments/README.md`); they are listed for transparency and are not part of the reproducible pipeline.
+
+**Final selection on Kaggle (12 Oct 2026):** file 5 (Model B + closing, public 0.33) and file 2 (Model A + closing, public 0.32). Both can be rebuilt from this repository and the Release v1.0 weights. The other six files are exploratory and were not selected.
 
 Validation PQ was computed on our own date-grouped split (164 annotator-images = 103 photos). For the baseline it equals the
-organisers Self-Evaluation code (0.3825); the closing variant was not cross-checked with it. The validation set was also used to choose
+organisers Self-Evaluation code (0.3825); the final pipeline with closing was also scored with the organisers code:
+Model A 0.3937 (TP 769, FP 719, FN 386), Model B 0.3983 (TP 763, FP 676, FN 392). The validation set was also used to choose
 the checkpoint, the 120 px filter and the closing variant, so the validation numbers are optimistic. A gap between validation (0.38-0.39)
 and the public score (0.31-0.32) remains unexplained.
 
