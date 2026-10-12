@@ -35,3 +35,18 @@ def test_grouping_never_adds_pixels():
         union |= g
     assert (union == m.astype(bool)).all()          # same pixels as the input mask
     assert grouped[0].sum() == m.sum()               # one instance made of both pieces
+
+
+def test_viz_crop_and_overlay():
+    from filament.viz import crop_box, overlay
+    m = np.zeros((2048, 2048), bool)
+    m[1990:2040, 1990:2040] = True                      # near the corner: window must be clipped to the image
+    y0, x0 = crop_box(m)
+    assert (y0, x0) == (2048 - 768, 2048 - 768)
+    assert crop_box(np.zeros((2048, 2048), bool)) == (640, 640)
+    gray = np.full((768, 768), 100, np.uint8)
+    gt = np.zeros((768, 768), bool); gt[100:200, 100:200] = True
+    pr = np.zeros((768, 768), bool); pr[300:400, 300:400] = True
+    out = overlay(gray, [gt], [pr])
+    assert out.shape == (768, 768, 3)
+    assert tuple(out[100, 150]) == (0, 255, 255) and tuple(out[300, 350]) == (255, 0, 0)

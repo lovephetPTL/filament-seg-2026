@@ -92,8 +92,8 @@ Tile Dice counts empty tiles as 1.0 and is therefore much higher than the filame
 
 ## Repository layout
 ```
-src/filament/     config, tiling (blend), infer, postprocess, rle, pipeline, metrics, evaluation, data, v3_data, dataset, model, train
-scripts/          make_submission.py, compare_submissions.py, evaluate_val.py, train.py, train_v3.py
+src/filament/     config, tiling (blend), infer, postprocess, rle, pipeline, metrics, evaluation, viz, data, v3_data, dataset, model, train
+scripts/          make_submission.py, compare_submissions.py, evaluate_val.py, make_example_figure.py, train.py, train_v3.py
 experiments/      tile plan, result files and notes of the supplementary fine-tuning runs (Model B)
 notebooks/        01_make_submission.ipynb  (the entry point for reviewers)
 tests/            unit tests (pytest) for tiling/blending, post-processing, RLE, PQ and the split
