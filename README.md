@@ -118,4 +118,4 @@ for p in ["torch","segmentation-models-pytorch","numpy","scipy","opencv-python",
 
 ## Data, license and citation
 Data: MAGFiLO (Ahmadzadeh et al., 2024, Scientific Data 11:1031, doi:10.1038/s41597-024-03876-y), GONG data from NSO. Not included in this repository.
-License: TODO - choose an OSI-approved license (e.g. MIT) before the competition closes (Kaggle rules require OSI-approved terms for shared code).
+License: MIT, see the `LICENSE` file (an OSI-approved license, as the Kaggle rules require for shared code).
