@@ -48,3 +48,20 @@ def evaluate_pq(coco, val_ids, instances_by_photo, photo_of):
     return {"PQ": round(pq, 4), "TP": tp, "FP": fp, "FN": fn,
             "SQ": round(sum_iou / max(tp, 1), 3), "RQ": round(rq, 3),
             "pred_pieces": sum(len(v) for v in instances_by_photo.values())}
+
+
+def per_photo_counts(coco, val_ids, instances_by_photo, photo_of):
+    """{photo: np.array([TP, sum of TP IoUs, FP, FN])}, pooled over the annotator-images of the photo.
+    The sum over all photos reproduces `evaluate_pq`."""
+    out, labels = {}, {}
+    for img_id in val_ids:
+        gts = gt_pixel_lists(coco, img_id)
+        if not gts:
+            continue
+        photo = photo_of(img_id)
+        if photo not in labels:
+            labels[photo] = label_image(instances_by_photo[photo])
+        t, s_iou, n_pred, n_gt = match_instances(labels[photo], gts)
+        out.setdefault(photo, np.zeros(4))
+        out[photo] += (t, s_iou, n_pred - t, n_gt - t)
+    return out
