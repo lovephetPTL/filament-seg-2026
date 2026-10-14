@@ -69,7 +69,7 @@ The gain of B (+0.011) comes mainly from fewer false positives (818 -> 719) with
 After the baseline we studied thin, feather-like filaments by hand and fine-tuned from the baseline weights. Details, tile lists and
 result files are in `experiments/`; the training script is `scripts/train_v3.py`, the validation script `scripts/evaluate_val.py`.
 Model B (`v3_control`, 5 epochs, lr 1e-4, random 90-degree rotation, 10 annotator-images and 173 tiles removed) reached validation PQ
-0.3983 versus 0.3937 for Model A with closing k=31 (0.3882 versus 0.3825 without closing); single run per arm, differences below about 0.005 are treated as noise. Public 0.33 versus 0.32 with
+0.3983 versus 0.3937 for Model A with closing k=31 (0.3882 versus 0.3825 without closing); single run per arm. A paired bootstrap over the 103 validation photos (10,000 resamples, `scripts/paired_bootstrap.py`) gives PQ(B) - PQ(A) = +0.0046 with a 95 % interval of [-0.0086, +0.0175] (B better in 77 % of the resamples), so the difference is not distinguishable from noise; the interval ignores training variance. Public 0.33 versus 0.32 with
 closing. We do not claim that Model B is better. The feather-focused variants did not beat the baseline on validation (see `experiments/README.md`).
 
 ## Training history (honest account)
@@ -108,7 +108,7 @@ figures/          validation IoU / Dice / many-to-one plots of the baseline
 * The notebook is shipped without saved outputs; run it to see them.
 * `scripts/compare_submissions.py` compares a regenerated CSV with the one uploaded to Kaggle.
 * **End-to-end check (Colab T4, about 5 minutes):** `scripts/make_submission.py` regenerated the Model A file from the test images and the baseline weights (`best_baseline_unet.pth` = `unet_resnet34_baseline_ep18.pth`): 1,566 rows (same ids as the submitted file), 1,565 identical RLE strings, one differing mask with IoU 0.9983 against the submitted one (small numerical differences between runs), 8.7 filaments per image, 2 of 180 images without a prediction, 0 overlapping masks, 0 RLE round-trip failures.
-* `infer.py`, `model.py`, `pipeline.py` were exercised by that run. `train.py`, `dataset.py` and `data.py` (training only) were refactored from the Colab cells and have NOT been re-run.
+* `infer.py`, `model.py`, `pipeline.py` were exercised by that run. `scripts/paired_bootstrap.py` (inference, post-processing, PQ matching and the date split of `data.py`) was run on a Colab T4 (2 min 19 s and 2 min 17 s for the 103 validation photos of Models A and B) and reproduced the validation PQ of the final pipeline with the repository code: 0.3937 (Model A) and 0.3983 (Model B). `train.py`, `dataset.py`, the tile-building part of `data.py`, `train_v3.py` and `evaluate_val.py` were refactored from the Colab cells and have NOT been re-run.
 
 ## Pinned versions
 `requirements.txt` holds the versions printed by this snippet in the Colab session used for the check above:

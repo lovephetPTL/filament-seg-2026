@@ -25,7 +25,7 @@ Training set for Model B: 5,067 filament tiles + 2,479 empty tiles (seeded 25 %)
 | v3_main, epoch 5 | big set, feather x4, blue-wins, rotation, lr 1e-4, 5 epochs | 0.3640 | 816 | 1068 | 339 | 0.31 |
 | **Model B = v3_control, epoch 5** | big set, feather x1, owner labels, rotation, lr 1e-4, 5 epochs | 0.3882 | 765 | 756 | 390 | 0.33 |
 
-Sources (all in `results/`): `val_results_organizer_code.json` (baseline, feather_x4), `val_results_finetune.json` (ft_union, ft_control),
+Sources (all in `results/`; the paired bootstrap result is described further below): `val_results_organizer_code.json` (baseline, feather_x4), `val_results_finetune.json` (ft_union, ft_control),
 `val_results_v3.json` (v3_main, v3_control). Public scores are shown by Kaggle with two decimals on part of the test set.
 
 ## Validation PQ of the final pipeline (closing k=31) and an exploratory probability filter
@@ -67,6 +67,13 @@ Bar fixed in advance for every test: PQ must beat Model B with closing (0.3983) 
   Kaggle as exploratory files (public 0.33 and 0.32); the (0.3, 0.6) pair was chosen after seeing validation results and was not measured on validation.
 * **Visual check of the pieces removed by `mean_prob >= 0.85` (Model B, 50 pieces, one observer, not blind):** 46 labelled real filament, 1 not a filament, 3 unsure;
   only 8 of the 50 match a ground-truth filament. This suggests the filter would also remove faint real structures. It is an observation, not a measurement.
+
+## Paired bootstrap, Model B versus Model A (`results/paired_bootstrap.json`)
+Final pipeline (closing k=31), 103 validation photos, 10,000 resamples, seed 0, all annotator-images of a photo drawn together.
+PQ(A) 0.3937 (95 % interval [0.3712, 0.4147]), PQ(B) 0.3983 ([0.3780, 0.4181]); difference B - A = +0.0046, 95 % interval [-0.0086, +0.0175],
+B better in 76.6 % of the resamples. Rule fixed before the result: the difference counts as supported only if the interval excludes 0; it does not.
+The intervals describe the sampling of validation photos only; one training run per model and validation-based model selection are not covered.
+The width of the interval (about +-0.013) is larger than the 0.005 working threshold used in the experiments above, so those differences are within noise as well.
 
 ## What the results say (and do not say)
 * No fine-tuned model is better than the baseline beyond noise. Model B is +0.0057 PQ on validation, just above our 0.005 threshold, one run per arm.
