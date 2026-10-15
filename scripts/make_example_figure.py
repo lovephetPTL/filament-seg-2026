@@ -2,6 +2,7 @@
 
   python scripts/make_example_figure.py --json MAGFiLO_1.0_Annotations_kaggle2026_train.json --images train \
          --weights unet_resnet34_v3_control_ep5.pth --out fig_examples.png
+Run once in Colab to create Figure 3 of the report (seed 0, 2 photos).
 Photos are drawn with random.Random(--seed) from the validation photos (no hand picking); the 768 px window is centred
 on the centre of mass of all annotators masks. Cyan = every annotator of the photo, red = pieces of the final pipeline.
 """
