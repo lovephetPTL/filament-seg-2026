@@ -51,7 +51,7 @@ No other file is needed. Training is **not** required to reproduce the predictio
 * **Model:** `segmentation_models_pytorch.Unet`, ResNet34 encoder (ImageNet init), 1 output channel.
 * **Loss:** 0.5 BCE + 0.5 Dice. **Optimiser:** AdamW, weight decay 1e-2, batch 8.
 * **Inference:** 5 x 5 = 25 tiles per image (stride 384, 25 % overlap), Gaussian-weighted averaging of probabilities, threshold 0.5.
-* **Instances:** 4-connected components; pieces smaller than 120 px are dropped (0.2 % of ground-truth filaments are that small).
+* **Instances:** 4-connected components; pieces smaller than 120 px are dropped (0.2 % of the validation ground-truth filaments are that small).
   Final file: pieces are grouped through a closing with an elliptical 31 x 31 kernel, but only the original pixels are submitted.
 * **Rejected:** Watershed splitting (default parameters over-segmented; after fixing a seed-suppression bug it scored below connected components),
   other thresholds (flat), 45 % overlap (no benefit).
@@ -90,7 +90,7 @@ Tile Dice counts empty tiles as 1.0 and is therefore much higher than the filame
 * **Training is not exactly reproducible:** the random sampling of empty training tiles was not seeded in the original run (`scripts/train.py` seeds it now, but a re-cut gives a different tile set). The submitted checkpoint is provided instead.
 * Hyper-parameters (epoch, 120 px filter, closing) were chosen with the validation set.
 * Annotator disagreement is large; about 17 % of predicted pieces are supported by no annotator of multiply-annotated photos, 28 % are unsupported by a randomly chosen one.
-* No augmentation, no architecture or loss search, input is a replicated single channel.
+* No augmentation for Model A (Model B adds random 90-degree rotations), no architecture or loss search, input is a replicated single channel.
 
 ## Repository layout
 ```
