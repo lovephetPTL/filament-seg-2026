@@ -34,8 +34,8 @@ and the public score (0.31-0.33) remains unexplained.
 2. Get the weights from the **Releases** page of this repository (v1.0, 97.9 MB each; the notebook downloads them automatically) and put them in the repository root:
    `unet_resnet34_baseline_ep18.pth` (Model A, 97,922,503 bytes) and `unet_resnet34_v3_control_ep5.pth` (Model B, 97,903,459 bytes):
    https://github.com/lovephetPTL/filament-seg-2026/releases/tag/v1.0
-3. `pip install -r requirements.txt`
-4. Run `notebooks/01_make_submission.ipynb`, or
+3. `pip install -r requirements.txt` (if the pinned versions cannot be installed on your platform, current versions also work, but a few boundary pixels may differ)
+4. Run `notebooks/01_make_submission.ipynb` (works from the repository root, from `notebooks/`, or in a fresh Colab session: its first cell clones this repository if needed), or
    `python scripts/make_submission.py --images test_images --weights unet_resnet34_baseline_ep18.pth --out submission_modelA_closing31.csv`
    (Model B: `--weights unet_resnet34_v3_control_ep5.pth`)
    (`--no-closing` gives the baseline file).
